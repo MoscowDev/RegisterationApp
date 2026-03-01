@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
         // Create user
         User user = new User();
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword()); // later: hash this
+        user.setPassword(request.getPassword());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setUsername(request.getUsername());
