@@ -14,7 +14,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
@@ -33,28 +34,30 @@ class UserServiceImplTest {
         request.setPassword("password123");
         request.setFirstName("Moses");
         request.setLastName("Ogomegbunam");
-        request.setMessage("login successful");
         request.setUsername("Moses");
         request.setAddress("sabo yaba");
 
         when(userRepository.existsByEmail("moses@test.com"))
                 .thenReturn(false);
 
-        // MOCK save to return a User object
         User savedUser = new User();
         savedUser.setEmail(request.getEmail());
         savedUser.setPassword(request.getPassword());
         savedUser.setFirstName(request.getFirstName());
         savedUser.setLastName(request.getLastName());
+        savedUser.setUsername(request.getUsername());
 
-        when(userRepository.save(org.mockito.ArgumentMatchers.any(User.class)))
+        when(userRepository.save(any(User.class)))
                 .thenReturn(savedUser);
 
         UserResponse response = userService.register(request);
 
         assertNotNull(response);
         assertEquals("Moses", response.getUsername());
-        assertEquals("Ogomegbunam", response.getMessage());
+        assertEquals("Registration successful", response.getMessage());
+
+        verify(userRepository).existsByEmail("moses@test.com");
+        verify(userRepository).save(any(User.class));
     }
 
     @Test
@@ -69,6 +72,8 @@ class UserServiceImplTest {
 
         assertThrows(IllegalStateException.class,
                 () -> userService.register(request));
+
+        verify(userRepository, never()).save(any());
     }
 
     @Test
@@ -77,19 +82,12 @@ class UserServiceImplTest {
         UserRequest request = new UserRequest();
         request.setEmail("moses@test.com");
         request.setPassword("password123");
-        request.setFirstName("Moses");
-        request.setLastName("Ogomegbunam");
-        request.setMessage("login successful");
         request.setUsername("Moses");
-        request.setAddress("sabo yaba");
 
         User user = new User();
         user.setEmail("moses@test.com");
         user.setPassword("password123");
-        user.setFirstName("Moses");
-        user.setLastName("Ogomegbunam");
-        user.setPassword("password123");
-
+        user.setUsername("Moses");
 
         when(userRepository.findByEmail("moses@test.com"))
                 .thenReturn(Optional.of(user));
@@ -98,7 +96,11 @@ class UserServiceImplTest {
 
         assertNotNull(response);
         assertEquals("Moses", response.getUsername());
-        assertEquals("Ogomegbunam", response.getMessage());
+        assertEquals("logged in successfully", response.getMessage());
+
+        verify(userRepository).findByEmail("moses@test.com");
+
+
     }
 
     @Test
@@ -118,10 +120,10 @@ class UserServiceImplTest {
         assertThrows(IllegalStateException.class,
                 () -> userService.login(request));
     }
+
     @Test
     void registerUser_withNullRequest_shouldThrowException() {
         assertThrows(IllegalArgumentException.class,
-                () -> userService.register(null)
-        );
+                () -> userService.register(null));
     }
 }
