@@ -96,15 +96,14 @@ class UserServiceImplTest {
 
         assertNotNull(response);
         assertEquals("Moses", response.getUsername());
-        assertEquals("logged in successfully", response.getMessage());
+        assertEquals("Logged in successfully", response.getMessage());
 
         verify(userRepository).findByEmail("moses@test.com");
 
 
     }
-
     @Test
-    void login_withWrongPassword_shouldFail() {
+    void login_withWrongPassword_shouldReturnErrorMessage() {
 
         UserRequest request = new UserRequest();
         request.setEmail("moses@test.com");
@@ -117,8 +116,13 @@ class UserServiceImplTest {
         when(userRepository.findByEmail("moses@test.com"))
                 .thenReturn(Optional.of(user));
 
-        assertThrows(IllegalStateException.class,
-                () -> userService.login(request));
+
+        UserResponse response = userService.login(request);
+
+
+        assertNotNull(response);
+        assertNull(response.getUsername());
+        assertEquals("Invalid password", response.getMessage());
     }
 
     @Test
